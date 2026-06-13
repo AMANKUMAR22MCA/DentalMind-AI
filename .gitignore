@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environment — never push secrets!
+.env
+
+# Data files — can be large
+data/
+
+# Alembic — optional, some push these
+# alembic/versions/
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+*.log

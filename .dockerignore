@@ -1,0 +1,27 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environment — never bake secrets into image!
+.env
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Alembic versions — optional
+# alembic/versions/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
