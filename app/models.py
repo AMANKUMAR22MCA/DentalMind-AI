@@ -39,3 +39,10 @@ class ClinicDoc(Base):
         server_default=func.now(),
         nullable=False
     )
+    
+    file_hash: Mapped[str] = mapped_column(
+    String(64),   # SHA256 = 64 characters
+    nullable=False,
+    index=True,   # index for fast duplicate lookup
+    default=""
+    )

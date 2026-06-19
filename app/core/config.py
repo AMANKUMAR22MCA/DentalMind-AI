@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_URL_LOCAL: str
     GROQ_API_KEY: str
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
 
     # Optional environment variables
     GEMINI_API_KEY: str | None = None

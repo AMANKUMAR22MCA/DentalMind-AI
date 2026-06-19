@@ -1,6 +1,9 @@
 # app/ingest.py
 
 from pathlib import Path
+import hashlib
+
+from sqlalchemy import select
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -8,61 +11,166 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from app.core.database import AsyncSessionLocal
 from app.models import ClinicDoc
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# load once
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+
+def calculate_file_hash(path: Path) -> str:
+    """
+    Generate SHA256 hash based on file content.
+    Same content = same hash
+    """
+
+    file_bytes = path.read_bytes()
+
+    return hashlib.sha256(
+        file_bytes
+    ).hexdigest()
+
 
 async def ingest_documents(file_path: str) -> int:
     """
-    Read a text file, split into chunks,
-    generate embeddings, and store in PostgreSQL.
+    Read file,
+    avoid duplicate content,
+    split chunks,
+    generate embeddings,
+    save vectors.
     """
 
-    # Resolve path relative to project root
     path = BASE_DIR / file_path
 
-    # 1. Read file
-    with open(path, "r", encoding="utf-8") as f:
-        text = f.read()
 
-    # 2. Split into chunks
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50,
-        length_function=len,
-    )
+    # --------------------------------
+    # 1. Calculate file hash
+    # --------------------------------
 
-    chunks = splitter.split_text(text)
+    file_hash = calculate_file_hash(path)
 
-    if not chunks:
-        print("No chunks generated.")
-        return 0
 
-    # 3. Generate embeddings
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    async with AsyncSessionLocal() as session:
 
-    vectors = embeddings.embed_documents(chunks)
 
-    # Validate counts
-    if len(chunks) != len(vectors):
-        raise ValueError(
-            f"Chunk count ({len(chunks)}) "
-            f"does not match vector count ({len(vectors)})"
+        # --------------------------------
+        # 2. Duplicate check by CONTENT
+        # --------------------------------
+
+        existing = await session.execute(
+
+            select(ClinicDoc)
+            .where(
+                ClinicDoc.file_hash == file_hash
+            )
+            .limit(1)
+
         )
 
-    # 4. Store in PostgreSQL
-    async with AsyncSessionLocal() as session:
-        docs = [
-            ClinicDoc(
-                content=chunk,
-                source=path.name,
-                embedding=vector,
+
+        if existing.scalars().first():
+
+            print(
+                f"{path.name} already ingested — skipping"
             )
-            for chunk, vector in zip(chunks, vectors)
+
+            return 0
+
+
+        # --------------------------------
+        # 3. Read file
+        # --------------------------------
+
+        with open(
+            path,
+            "r",
+            encoding="utf-8",
+        ) as f:
+
+            text = f.read()
+
+
+        # --------------------------------
+        # 4. Split chunks
+        # --------------------------------
+
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500,
+            chunk_overlap=50,
+            length_function=len,
+        )
+
+
+        chunks = splitter.split_text(
+            text
+        )
+
+
+        if not chunks:
+
+            print(
+                "No chunks generated."
+            )
+
+            return 0
+
+
+        # --------------------------------
+        # 5. Embeddings
+        # --------------------------------
+
+        vectors = embeddings.embed_documents(
+            chunks
+        )
+
+
+        if len(chunks) != len(vectors):
+
+            raise ValueError(
+                "Chunks and vectors mismatch"
+            )
+
+
+        # --------------------------------
+        # 6. Insert chunks
+        # --------------------------------
+
+        docs = [
+
+            ClinicDoc(
+
+                content=chunk,
+
+                source=path.name,
+
+                file_hash=file_hash,
+
+                embedding=vector,
+
+            )
+
+            for chunk, vector in zip(
+                chunks,
+                vectors,
+            )
+
         ]
 
-        session.add_all(docs)
+
+        session.add_all(
+            docs
+        )
+
+
         await session.commit()
 
-    print(f"Inserted {len(chunks)} chunks from {path.name}")
-    return len(chunks) 
+
+    print(
+        f"Inserted {len(chunks)} chunks from {path.name}"
+    )
+
+
+    return len(chunks)
