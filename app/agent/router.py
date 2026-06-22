@@ -27,6 +27,26 @@ async def router_node(
 
     user_message = state["messages"][-1].content
 
+    current_intent = state.get("intent", "")
+
+    # if mid-booking flow — continue booking
+    if current_intent == "book" and (
+        "appointment_date" not in state or
+        "available_slots" not in state or
+        "selected_slot" not in state or
+        "patient_name" not in state or
+        "user_email" not in state
+    ):
+        state["intent"] = "book"
+        return state
+
+    # if mid-cancel flow — continue cancel
+    if current_intent == "cancel" and (
+        "cancel_booking_id" not in state
+    ):
+        state["intent"] = "cancel"
+        return state
+
 
     prompt = f"""
 You are an intent classifier for DentalMind.

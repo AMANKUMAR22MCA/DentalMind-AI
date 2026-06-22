@@ -1,3 +1,4 @@
+from datetime import date
 from typing import TypedDict, NotRequired
 from langchain_core.messages import BaseMessage
 
@@ -18,11 +19,14 @@ class AgentState(TypedDict):
     # slots fetched from database
     available_slots: NotRequired[list]
 
-    # appointment slot selected by user
-    selected_slot: NotRequired[dict]
-
     # patient's email for confirmation
     user_email: NotRequired[str]
 
     # booking confirmation status
     confirmed: NotRequired[bool]
+
+    appointment_date: NotRequired[date]
+    patient_name: NotRequired[str]
+    selected_slot: NotRequired[str]
+    appointment_cancelled: NotRequired[bool]
+    cancel_booking_id: NotRequired[str]

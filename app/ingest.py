@@ -9,7 +9,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from app.core.database import AsyncSessionLocal
-from app.models import ClinicDoc
+from app.models.clinic_doc import ClinicDoc
+from app.models.appointment import Appointment
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent

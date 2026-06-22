@@ -3,7 +3,9 @@ from langgraph.graph import StateGraph, END
 from app.agent.state import AgentState
 from app.agent.router import router_node
 from app.agent.nodes.rag import rag_node
-
+from app.agent.nodes.book import book_node
+from app.agent.nodes.chat import chat_node
+from app.agent.nodes.cancel import cancel_node
 # -----------------------------
 # Placeholder Nodes
 # -----------------------------
@@ -15,25 +17,25 @@ from app.agent.nodes.rag import rag_node
 #     return state
 
 
-async def book_node(
-    state: AgentState,
-) -> AgentState:
-    print("BOOK NODE CALLED")
-    return state
+# async def book_node(
+#     state: AgentState,
+# ) -> AgentState:
+#     print("BOOK NODE CALLED")
+#     return state
 
 
-async def cancel_node(
-    state: AgentState,
-) -> AgentState:
-    print("CANCEL NODE CALLED")
-    return state
+# async def cancel_node(
+#     state: AgentState,
+# ) -> AgentState:
+#     print("CANCEL NODE CALLED")
+#     return state
 
 
-async def chat_node(
-    state: AgentState,
-) -> AgentState:
-    print("CHAT NODE CALLED")
-    return state
+# async def chat_node(
+#     state: AgentState,
+# ) -> AgentState:
+#     print("CHAT NODE CALLED")
+#     return state
 
 
 # -----------------------------

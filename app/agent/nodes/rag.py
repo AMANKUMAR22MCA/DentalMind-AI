@@ -5,7 +5,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 
 from app.agent.state import AgentState
-from app.models import ClinicDoc
+from app.models.clinic_doc import ClinicDoc
+from app.models.appointment import Appointment
 from app.core.database import AsyncSessionLocal
 from app.core.config import get_settings
 

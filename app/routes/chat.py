@@ -4,7 +4,10 @@ from pydantic import BaseModel
 from langchain_core.messages import HumanMessage
 
 from app.agent.graph import dental_graph
-
+from app.core.memory import (
+    load_state,
+    save_state,
+)
 
 router = APIRouter()
 
@@ -37,23 +40,30 @@ async def chat(
 ) -> ChatResponse:
 
     try:
+        state = await load_state(request.session_id)
+        if state:
+            state["messages"].append(
 
-        # 1. Create initial AgentState
-
-        state = {
-            "messages": [
                 HumanMessage(
-                    content=request.message
+                content=request.message
                 )
-            ],
+            )
+        else:
+            state = {
+                "messages": [
+                    HumanMessage(
+                        content=request.message
+                    )
+                ],
 
-            "intent": "",
-        }
+                "intent": "",
+            }
 
 
         # 2. Run LangGraph
 
         result = await dental_graph.ainvoke(state)
+        await save_state(request.session_id,result,)
 
 
         # 3. Get latest message

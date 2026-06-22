@@ -6,7 +6,8 @@ from sqlalchemy import pool
 from alembic import context
 from app.core.database import Base
 from app.core.config import get_settings
-import app.models
+import app.models.clinic_doc
+import app.models.appointment
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -65,7 +66,7 @@ def run_migrations_online() -> None:
     {"sqlalchemy.url": settings.DATABASE_URL_LOCAL.replace("asyncpg", "psycopg2")},
     prefix="sqlalchemy.",
     poolclass=pool.NullPool,
- )
+    )
 
     with connectable.connect() as connection:
         context.configure(
