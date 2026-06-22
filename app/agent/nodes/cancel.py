@@ -101,6 +101,13 @@ async def cancel_node(
 
     if "cancel_booking_id" not in state:
 
+        if "new booking" in user_message.lower():
+            state["intent"] = "book"
+            state["messages"].append(
+                AIMessage(content="Sure! Let's start a new booking. Please provide your preferred date in YYYY-MM-DD format.")
+            )
+            return state
+
 
         if "cancel" in user_message.lower():
 
@@ -109,9 +116,10 @@ async def cancel_node(
 
                 AIMessage(
                     content=(
-                        "Sure, I can help cancel "
-                        "your appointment. "
-                        "Please provide your booking ID."
+                        "Sure, I can help cancel your appointment.\n\n"
+                        "Please provide your Booking ID.\n\n"
+                        "If you haven't completed a booking yet, "
+                        "say 'new booking' to start fresh."
                     )
                 )
 
