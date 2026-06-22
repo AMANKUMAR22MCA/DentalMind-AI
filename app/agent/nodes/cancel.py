@@ -16,10 +16,82 @@ async def cancel_node(
     Handles appointment cancellation flow.
     """
 
-
     user_message = (
         state["messages"][-1].content
     )
+
+
+    # -----------------------------
+    # STEP 0:
+    # Handle reschedule response
+    # -----------------------------
+
+    if state.get("appointment_cancelled"):
+
+
+        if any(
+            word in user_message.lower()
+            for word in [
+                "yes",
+                "yeah",
+                "sure",
+                "reschedule",
+            ]
+        ):
+
+
+            # clear old booking/cancel state
+
+            state.pop("appointment_date", None)
+            state.pop("available_slots", None)
+            state.pop("selected_slot", None)
+            state.pop("patient_name", None)
+            state.pop("user_email", None)
+
+            state.pop(
+                "cancel_booking_id",
+                None,
+            )
+
+            state.pop(
+                "appointment_cancelled",
+                None,
+            )
+
+
+            state["intent"] = "book"
+
+
+            state["messages"].append(
+
+                AIMessage(
+                    content=(
+                        "Sure! Let's reschedule. "
+                        "Please provide your preferred date "
+                        "in YYYY-MM-DD format."
+                    )
+                )
+
+            )
+
+
+        else:
+
+
+            state["messages"].append(
+
+                AIMessage(
+                    content=(
+                        "Okay! Feel free to reach out "
+                        "anytime. Have a great day!"
+                    )
+                )
+
+            )
+
+
+        return state
+
 
 
     # -----------------------------
@@ -30,8 +102,6 @@ async def cancel_node(
     if "cancel_booking_id" not in state:
 
 
-        # User just started cancellation
-
         if "cancel" in user_message.lower():
 
 
@@ -39,19 +109,19 @@ async def cancel_node(
 
                 AIMessage(
                     content=(
-                        "Sure, I can help cancel your appointment. "
+                        "Sure, I can help cancel "
+                        "your appointment. "
                         "Please provide your booking ID."
                     )
                 )
 
             )
 
-
             return state
 
 
 
-        # Validate booking ID format
+        # validate UUID
 
         try:
 
@@ -79,7 +149,6 @@ async def cancel_node(
 
             )
 
-
             return state
 
 
@@ -89,7 +158,6 @@ async def cancel_node(
     # Cancel appointment
     # -----------------------------
 
-
     success = await cancel_appointment(
 
         state["cancel_booking_id"]
@@ -98,6 +166,9 @@ async def cancel_node(
 
 
     if success:
+
+
+        state["appointment_cancelled"] = True
 
 
         state["messages"].append(
@@ -111,10 +182,6 @@ async def cancel_node(
             )
 
         )
-
-
-        state["appointment_cancelled"] = True
-
 
 
     else:

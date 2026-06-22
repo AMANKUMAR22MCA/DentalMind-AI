@@ -83,6 +83,33 @@ Message:
     ]:
         intent = "chat"
 
+    # -----------------------------
+    # Reset old workflow if changed
+    # -----------------------------
+
+    if intent != current_intent:
+
+
+        state.pop("appointment_date", None)
+
+        state.pop("available_slots", None)
+
+        state.pop("selected_slot", None)
+
+        state.pop("patient_name", None)
+
+        state.pop("user_email", None)
+
+        state.pop(
+            "cancel_booking_id",
+            None,
+        )
+
+        state.pop(
+            "appointment_cancelled",
+            None,
+        )    
+
 
     # save intent into state
     state["intent"] = intent
